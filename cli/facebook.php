@@ -3,9 +3,8 @@
 require_once '../config.php';
 require_once '../vendor/autoload.php';
 
-$m = new MongoClient();
-$db = $m->selectDB('resistance_calendar');
-$eventCollection = $db->selectCollection('events');
+$m = new MongoDB\Client();
+$eventCollection = $m->resistance_calendar->events;
 
 $fb = new \Facebook\Facebook([
   'app_id' => FB_APP_ID,
@@ -14,12 +13,12 @@ $fb = new \Facebook\Facebook([
   'default_access_token' => FB_ACCESS_TOKEN
 ]);
 
-$eventsToCheck = $eventCollection->find([])->sort(['updated' => 1]);
+$eventsToCheck = $eventCollection->find([], ['sort' => ['updated' => 1]]);
 foreach ($eventsToCheck as $eventToCheck) {
     try {
         $response = $fb->get("/{$eventToCheck['_id']}?fields=attending_count,category,end_time,name,place,timezone");
         $event = $response->getDecodedBody();
-        $eventCollection->update(
+        $eventCollection->updateOne(
             ['_id' => $eventToCheck['_id']],
             ['$set' => [
                 'name' => (isset($event['name'])) ? $event['name'] : null,
@@ -33,7 +32,7 @@ foreach ($eventsToCheck as $eventToCheck) {
             ]]
         );
     } catch (\Exception $e) {
-        $eventCollection->update(
+        $eventCollection->updateOne(
             ['_id' => $eventToCheck['_id']],
             ['$set' => [
                 'error' => $e->getMessage(),

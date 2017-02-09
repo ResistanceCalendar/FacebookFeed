@@ -1,6 +1,7 @@
 {
     "require": {
         "johngrogg/ics-parser": "^2.0",
-        "facebook/graph-sdk" : "~5.0"
+        "facebook/graph-sdk" : "~5.0",
+        "mongodb/mongodb" : "~1.0"
     }
 }
